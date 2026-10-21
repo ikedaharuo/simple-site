@@ -1,15 +1,27 @@
 # Simple site
 
-Статичный сайт + автодеплой через `git push`.
+Статичный сайт. Автодеплой: push в `main` -> GitHub Actions -> rsync на сервер.
 
-## Настройка сервера (один раз)
+## 1. Сервер (один раз)
 ```bash
 scp server/setup.sh user@IP:~/ && ssh user@IP "sudo bash setup.sh"
 ```
 
-## Подключение и деплой
+## 2. SSH-ключ для деплоя
 ```bash
-git remote add production ssh://user@IP/home/user/site.git
-git push production main
+ssh-keygen -t ed25519 -f deploy_key -N "" -C github-deploy
+ssh-copy-id -i deploy_key.pub user@IP
 ```
-Каждый следующий `git push production main` сразу обновляет сайт.
+Содержимое `deploy_key` (приватный) идёт в секрет GitHub, потом файл удалить.
+
+## 3. Секреты репозитория (Settings -> Secrets and variables -> Actions)
+- `SSH_HOST` — IP сервера
+- `SSH_USER` — пользователь
+- `SSH_PRIVATE_KEY` — приватный ключ целиком
+- `SSH_PORT` — необязательно, по умолчанию 22
+
+## 4. Деплой
+```bash
+git remote add origin git@github.com:<you>/<repo>.git
+git push -u origin main
+```
